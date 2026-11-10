@@ -1910,6 +1910,48 @@ void SCIPintervalPowerScalarScalar(
    resultant->sup = SCIPnextafter(result, SCIP_REAL_MAX);
 }
 
+/** computes lower bound on power of a scalar operand1 to an integral operand2
+ *
+ * Same as SCIPintervalPowerScalarIntegerInf(), but operand2 does not need to fit into an int.
+ */
+static
+SCIP_Real intervalPowerScalarIntegralInf(
+   SCIP_Real             operand1,           /**< first operand of operation */
+   SCIP_Real             operand2            /**< second operand of operation */
+   )
+{
+   SCIP_INTERVAL result;
+
+   /* the int version negates negative exponents, so also -operand2 needs to fit into an int */
+   if( REALABS(operand2) <= INT_MAX )
+      return SCIPintervalPowerScalarIntegerInf(operand1, (int)operand2);
+
+   SCIPintervalPowerScalarScalar(&result, operand1, operand2);
+
+   return result.inf;
+}
+
+/** computes upper bound on power of a scalar operand1 to an integral operand2
+ *
+ * Same as SCIPintervalPowerScalarIntegerSup(), but operand2 does not need to fit into an int.
+ */
+static
+SCIP_Real intervalPowerScalarIntegralSup(
+   SCIP_Real             operand1,           /**< first operand of operation */
+   SCIP_Real             operand2            /**< second operand of operation */
+   )
+{
+   SCIP_INTERVAL result;
+
+   /* the int version negates negative exponents, so also -operand2 needs to fit into an int */
+   if( REALABS(operand2) <= INT_MAX )
+      return SCIPintervalPowerScalarIntegerSup(operand1, (int)operand2);
+
+   SCIPintervalPowerScalarScalar(&result, operand1, operand2);
+
+   return result.sup;
+}
+
 /** stores operand1 to the power of the scalar operand2 in resultant
  * @attention we assume a correctly rounded pow(double) function when rounding is to nearest
  */
@@ -2045,12 +2087,12 @@ void SCIPintervalPowerScalar(
             /* (-inf)^n = inf */
             resultant->inf = infinity;
          else
-            resultant->inf = SCIPintervalPowerScalarIntegerInf(-operand1.sup, (int)operand2);
+            resultant->inf = intervalPowerScalarIntegralInf(-operand1.sup, operand2);
 
          if( operand1.inf <= -infinity )
             resultant->sup = infinity;
          else
-            resultant->sup = SCIPintervalPowerScalarIntegerSup(-operand1.inf, (int)operand2);
+            resultant->sup = intervalPowerScalarIntegralSup(-operand1.inf, operand2);
       }
       else if( operand2 <= 0.0 && ceil(operand2/2) != operand2/2 )
       {
@@ -2062,7 +2104,7 @@ void SCIPintervalPowerScalar(
             /* x^n -> -infinity for x->0 from left */
             resultant->inf = -infinity;
          else
-            resultant->inf = -SCIPintervalPowerScalarIntegerSup(-operand1.sup, (int)operand2);
+            resultant->inf = -intervalPowerScalarIntegralSup(-operand1.sup, operand2);
 
          if( operand1.inf <= -infinity )
             /* (-inf)^n = 1/(-inf)^(-n) = 1/(-inf) = 0 */
@@ -2071,7 +2113,7 @@ void SCIPintervalPowerScalar(
             /* x^n -> infinity for x->0 from right */
             resultant->sup = infinity;
          else
-            resultant->sup = -SCIPintervalPowerScalarIntegerInf(-operand1.inf, (int)operand2);
+            resultant->sup = -intervalPowerScalarIntegralInf(-operand1.inf, operand2);
       }
       else if( operand2 >= 0.0 )
       {
@@ -2079,12 +2121,12 @@ void SCIPintervalPowerScalar(
          if( operand1.inf <= -infinity )
             resultant->inf = -infinity;
          else
-            resultant->inf = -SCIPintervalPowerScalarIntegerSup(-operand1.inf, (int)operand2);
+            resultant->inf = -intervalPowerScalarIntegralSup(-operand1.inf, operand2);
 
          if( operand1.sup <= -infinity )
             resultant->sup = -infinity;
          else
-            resultant->sup = -SCIPintervalPowerScalarIntegerInf(-operand1.sup, (int)operand2);
+            resultant->sup = -intervalPowerScalarIntegralInf(-operand1.sup, operand2);
       }
       else
       {
@@ -2095,7 +2137,7 @@ void SCIPintervalPowerScalar(
             /* x^n -> infinity for x->0 from both sides */
             resultant->inf = infinity;
          else
-            resultant->inf = SCIPintervalPowerScalarIntegerSup(-operand1.inf, (int)operand2);
+            resultant->inf = intervalPowerScalarIntegralSup(-operand1.inf, operand2);
 
          if( operand1.sup <= -infinity )
             resultant->sup = 0.0;
@@ -2103,7 +2145,7 @@ void SCIPintervalPowerScalar(
             /* x^n -> infinity for x->0 from both sides */
             resultant->sup = infinity;
          else
-            resultant->sup = SCIPintervalPowerScalarIntegerSup(-operand1.sup, (int)operand2);
+            resultant->sup = intervalPowerScalarIntegralSup(-operand1.sup, operand2);
       }
       assert(resultant->inf <= resultant->sup || resultant->inf >= infinity || resultant->sup <= -infinity);
    }
@@ -2117,7 +2159,7 @@ void SCIPintervalPowerScalar(
          if( operand1.inf == -infinity || operand1.sup == infinity )
             resultant->sup = infinity;
          else
-            resultant->sup = SCIPintervalPowerScalarIntegerSup(MAX(-operand1.inf, operand1.sup), (int)operand2);
+            resultant->sup = intervalPowerScalarIntegralSup(MAX(-operand1.inf, operand1.sup), operand2);
       }
       else if( operand2 <= 0.0 && ceil(operand2/2) == operand2/2 )
       {
@@ -2126,7 +2168,7 @@ void SCIPintervalPowerScalar(
          if( operand1.inf == -infinity || operand1.sup == infinity )
             resultant->inf = 0.0;
          else
-            resultant->inf = SCIPintervalPowerScalarIntegerInf(MAX(-operand1.inf, operand1.sup), (int)operand2);
+            resultant->inf = intervalPowerScalarIntegralInf(MAX(-operand1.inf, operand1.sup), operand2);
       }
       else if( operand2 >= 0.0 )
       {
@@ -2134,11 +2176,11 @@ void SCIPintervalPowerScalar(
          if( operand1.inf == -infinity )
             resultant->inf = -infinity;
          else
-            resultant->inf = -SCIPintervalPowerScalarIntegerSup(-operand1.inf, (int)operand2);
+            resultant->inf = -intervalPowerScalarIntegralSup(-operand1.inf, operand2);
          if( operand1.sup == infinity )
             resultant->sup = infinity;
          else
-            resultant->sup = SCIPintervalPowerScalarIntegerSup(operand1.sup, (int)operand2);
+            resultant->sup = intervalPowerScalarIntegralSup(operand1.sup, operand2);
       }
       else
       {
