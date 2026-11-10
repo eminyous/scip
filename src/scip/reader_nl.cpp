@@ -2652,6 +2652,7 @@ public:
                else if( SCIPisExprProduct(scip, expr) )
                {
                   int nargs = SCIPexprGetNChildren(expr);
+                  SCIP_Real coef = SCIPgetCoefExprProduct(expr);
                   assert(nargs > 0);
 
                   // in VISITEDCHILD we will take care of turning a product of more than 2 factors
@@ -2659,9 +2660,17 @@ public:
                   newew = new ConExprWriter(parentew->OPut2(mp::nl::MUL));
 
                   // nargs should be >= 2, but theoretically could be 1
-                  // we will then write this as 1*arg for simplicity
+                  // we will then write this as coef*arg
                   if( nargs == 1 )
-                     newew->NPut(1.0);
+                     newew->NPut(coef);
+                  else if( coef != 1.0 )
+                  {
+                     // write coef*(product of factors)
+                     newew->NPut(coef);
+                     ConExprWriter* factorsew = new ConExprWriter(newew->OPut2(mp::nl::MUL));
+                     delete newew;
+                     newew = factorsew;
+                  }
                }
                else if( SCIPisExprPower(scip, expr) )
                {
