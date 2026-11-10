@@ -283,6 +283,54 @@ Test(monotonicity, pow)
    SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_INC) );
 }
 
+/* check for pow expressions on intervals that touch the pole at zero or contain negative values */
+Test(monotonicity, pow_domain)
+{
+   SCIP_CALL( createExpr("<x>[C]^(-1)", "pow") );
+
+   SCIP_CALL( chgBounds(x, 1.0, 2.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_DEC) );
+   SCIP_CALL( chgBounds(x, 0.0, 2.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_UNKNOWN) );
+   SCIP_CALL( chgBounds(x, 0.0, 0.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_UNKNOWN) );
+   SCIP_CALL( chgBounds(x, -2.0, 0.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_UNKNOWN) );
+   SCIP_CALL( chgBounds(x, -2.0, -1.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_DEC) );
+
+   SCIP_CALL( createExpr("<x>[C]^(-2)", "pow") );
+
+   SCIP_CALL( chgBounds(x, -2.0, -1.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_INC) );
+   SCIP_CALL( chgBounds(x, -2.0, 0.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_UNKNOWN) );
+   SCIP_CALL( chgBounds(x, 0.0, 2.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_UNKNOWN) );
+   SCIP_CALL( chgBounds(x, 1.0, 2.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_DEC) );
+
+   SCIP_CALL( createExpr("<x>[C]^(-0.5)", "pow") );
+
+   SCIP_CALL( chgBounds(x, 1.0, 2.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_DEC) );
+   SCIP_CALL( chgBounds(x, 0.0, 2.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_UNKNOWN) );
+   SCIP_CALL( chgBounds(x, -2.0, 2.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_UNKNOWN) );
+
+   SCIP_CALL( createExpr("<x>[C]^(0.5)", "pow") );
+
+   SCIP_CALL( chgBounds(x, -2.0, 2.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_UNKNOWN) );
+   SCIP_CALL( chgBounds(x, -2.0, 0.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_UNKNOWN) );
+   SCIP_CALL( chgBounds(x, 0.0, 0.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_INC) );
+   SCIP_CALL( chgBounds(x, 0.0, 2.0) );
+   SCIP_CALL( testMonotonicity(0, SCIP_MONOTONE_INC) );
+}
+
 /* check for product expression with two factors */
 Test(monotonicity, prod_two)
 {
