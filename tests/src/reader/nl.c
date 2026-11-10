@@ -36,6 +36,7 @@
 #include "scip/expr_trig.h"
 #include "scip/expr_sum.h"
 #include "scip/expr_var.h"
+#include "scip/expr_product.h"
 
 #include "include/scip_test.h"
 
@@ -374,4 +375,61 @@ Test(readernl, writenegvar, .description = "check writing of nl file with negate
    remove("readernl_writenegvartest.nl");
    remove("readernl_writenegvartest.col");
    remove("readernl_writenegvartest.row");
+}
+
+/* check writing of nl file with product expression that has a coefficient */
+Test(readernl, writeprodcoef, .description = "check writing of nl file with coefficient of product")
+{
+   SCIP_CONS* cons;
+   SCIP_VAR* vars[2];
+   SCIP_EXPR* varexprs[2];
+   SCIP_EXPR* expr;
+   SCIP_SOL* sol;
+
+   /* skip test if nl reader not available (SCIP compiled with AMPL=false) */
+   if( SCIPfindReader(scip, "nlreader") == NULL )
+      return;
+
+   SCIP_CALL( SCIPcreateProbBasic(scip, "testprodcoef") );
+   SCIP_CALL( SCIPcreateVarBasic(scip, &vars[0], "x", 0.0, 3.0, 0.0, SCIP_VARTYPE_CONTINUOUS) );
+   SCIP_CALL( SCIPaddVar(scip, vars[0]) );
+   SCIP_CALL( SCIPcreateVarBasic(scip, &vars[1], "y", 0.0, 3.0, 0.0, SCIP_VARTYPE_CONTINUOUS) );
+   SCIP_CALL( SCIPaddVar(scip, vars[1]) );
+
+   /* we add a constraint 2*x*y == 1 */
+   SCIP_CALL( SCIPcreateExprVar(scip, &varexprs[0], vars[0], NULL, NULL) );
+   SCIP_CALL( SCIPcreateExprVar(scip, &varexprs[1], vars[1], NULL, NULL) );
+   SCIP_CALL( SCIPcreateExprProduct(scip, &expr, 2, varexprs, 2.0, NULL, NULL) );
+   SCIP_CALL( SCIPcreateConsBasicNonlinear(scip, &cons, "test", expr, 1.0, 1.0) );
+
+   SCIP_CALL( SCIPreleaseExpr(scip, &expr) );
+   SCIP_CALL( SCIPreleaseExpr(scip, &varexprs[1]) );
+   SCIP_CALL( SCIPreleaseExpr(scip, &varexprs[0]) );
+
+   SCIP_CALL( SCIPaddCons(scip, cons) );
+
+   SCIP_CALL( SCIPwriteOrigProblem(scip, "readernl_writeprodcoeftest.nl", "nl", FALSE) );
+
+   SCIP_CALL( SCIPreleaseCons(scip, &cons) );
+   SCIP_CALL( SCIPreleaseVar(scip, &vars[1]) );
+   SCIP_CALL( SCIPreleaseVar(scip, &vars[0]) );
+
+   SCIP_CALL( SCIPreadProb(scip, "readernl_writeprodcoeftest.nl", NULL) );
+
+   cr_assert_eq(SCIPgetNVars(scip), 2);
+   cr_assert_eq(SCIPgetNConss(scip), 1);
+   cons = SCIPgetConss(scip)[0];
+   cr_assert_str_eq(SCIPconshdlrGetName(SCIPconsGetHdlr(cons)), "nonlinear");
+
+   /* we expect the constraint function to evaluate to 2*1.5*2 at x = 1.5, y = 2 */
+   SCIP_CALL( SCIPcreateSol(scip, &sol, NULL) );
+   SCIP_CALL( SCIPsetSolVal(scip, sol, SCIPgetVars(scip)[0], 1.5) );
+   SCIP_CALL( SCIPsetSolVal(scip, sol, SCIPgetVars(scip)[1], 2.0) );
+   SCIP_CALL( SCIPevalExpr(scip, SCIPgetExprNonlinear(cons), sol, 0) );
+   cr_expect_float_eq(SCIPexprGetEvalValue(SCIPgetExprNonlinear(cons)), 6.0, SCIPepsilon(scip));
+   SCIP_CALL( SCIPfreeSol(scip, &sol) );
+
+   remove("readernl_writeprodcoeftest.nl");
+   remove("readernl_writeprodcoeftest.col");
+   remove("readernl_writeprodcoeftest.row");
 }
