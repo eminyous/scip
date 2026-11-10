@@ -1553,6 +1553,7 @@ SCIP_SOL** SCIPgetPartialSols(
  *       - \ref SCIP_STAGE_SOLVING
  *       - \ref SCIP_STAGE_SOLVED
  */
+SCIP_EXPORT
 int SCIPgetNPartialSols(
    SCIP*                 scip                /**< SCIP data structure */
    );
