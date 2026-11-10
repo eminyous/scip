@@ -1449,7 +1449,7 @@ SCIP_DECL_EXPRSIMPLIFY(simplifyPow)
       SCIP_EXPR* simplifiedaux;
 
       /* enforces POW12 (abs(x)^n = x^n if n is even) */
-      if( SCIPisExprAbs(scip, base) && (int)exponent % 2 == 0 )
+      if( SCIPisExprAbs(scip, base) && fmod(exponent, 2.0) == 0.0 )
       {
          SCIP_EXPR* newpow;
 
@@ -1713,11 +1713,11 @@ SCIP_DECL_EXPRSIMPLIFY(simplifyPow)
        */
       if( !EPSISINT(newexponent, 0.0) ||
           (EPSISINT(baseexponent, 0.0) && EPSISINT(exponent, 0.0)) ||
-          (EPSISINT(baseexponent, 0.0) && ((int)baseexponent) % 2 == 0) )
+          (EPSISINT(baseexponent, 0.0) && fmod(baseexponent, 2.0) == 0.0) )
       {
          SCIP_EXPR* aux;
 
-         if( EPSISINT(baseexponent, 0.0) && ((int)baseexponent) % 2 == 0 &&
+         if( EPSISINT(baseexponent, 0.0) && fmod(baseexponent, 2.0) == 0.0 &&
              (!EPSISINT(newexponent, 0.0) || fmod(newexponent, 2.0) != 0.0) )
          {
             /* If base exponent was even integer and new exponent will be fractional,
@@ -2542,7 +2542,7 @@ SCIP_DECL_EXPRSIMPLIFY(simplifySignpower)
    }
 
    /* enforces SPOW6 */
-   if( EPSISINT(exponent, 0.0) && ((int)exponent) % 2 == 1 )
+   if( EPSISINT(exponent, 0.0) && fmod(exponent, 2.0) != 0.0 )
    {
       SCIP_EXPR* aux;
 
@@ -2593,7 +2593,7 @@ SCIP_DECL_EXPRSIMPLIFY(simplifySignpower)
       SCIP_EXPR* aux;
       SCIP_Real newexponent;
 
-      assert(((int)exponent) % 2 == 0 ); /* odd case should have been handled by SPOW6 */
+      assert(fmod(exponent, 2.0) == 0.0); /* odd case should have been handled by SPOW6 */
 
       newexponent = SCIPgetExponentExprPow(base) * exponent;
       SCIP_CALL( SCIPcreateExprSignpower(scip, &aux, SCIPexprGetChildren(base)[0], newexponent,

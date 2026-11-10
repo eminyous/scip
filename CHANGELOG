@@ -37,6 +37,8 @@ Fixed bugs
 - reset valid depth for local constraint in SCIPconsSetLocal() to avoid invalid globality e.g. within disjunction constraint
 - fixed that simplifying (x^2)^(-0.5) gave x^(-1) instead of |x|^(-1), that is, the absolute value was dropped when
   the exponent of a nested power became a negative odd integer
+- fixed that the simplification of powers, signpowers and products treated odd integer exponents above INT_MAX
+  as even, which could change the sign of the expression, e.g., abs(x)^2147483649 was simplified to x^2147483649
 
 Examples and applications
 -------------------------

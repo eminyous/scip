@@ -563,7 +563,7 @@ SCIP_RETCODE mergeProductExprlist(
             /* exactly one is signpower: sign(x) |x|^expo1 x^expo2 = sign(x)^(1+expo2) |x|^(expo1+expo2),  with x = base */
             if( EPSISINT(expo2, 0.0) )  /*lint !e835*/
             {
-               if( (int)expo2 % 2 == 0 )
+               if( fmod(expo2, 2.0) == 0.0 )
                {
                   /* if expo2 is even, then sign(x)^(1+expo2) = sign(x), so we have signpower: sign(x) |x|^(expo1+expo2)
                    * TODO: we can remove this case distinction once the simplification of power expressions tranform
@@ -596,7 +596,7 @@ SCIP_RETCODE mergeProductExprlist(
             /* if both are signpower, then we have |base|^(expo1+expo2)
              * if expo1+expo2 is even, then we can change this to base^(expo1+expo2)
              */
-            if( EPSISINT(expo1+expo2, 0.0) && (int)(expo1+expo2)%2 == 0 ) /*lint !e835*/
+            if( EPSISINT(expo1+expo2, 0.0) && fmod(expo1+expo2, 2.0) == 0.0 ) /*lint !e835*/
             {
                SCIP_CALL( SCIPcreateExprPow(scip, &power, base1, expo1 + expo2, ownercreate, ownercreatedata) );
             }
