@@ -35,6 +35,8 @@ Fixed bugs
 - made sure that nauty is terminated if the maximum number of generators is reached
 - skip mapping data of untransformed and-constraints in pseudoboolean constraint initialization to avoid segmentation fault for example in IIS generation
 - reset valid depth for local constraint in SCIPconsSetLocal() to avoid invalid globality e.g. within disjunction constraint
+- fixed that SCIPupdateLocalDualbound() in stages PRESOLVING and PRESOLVED treated the given original-space bound as a
+  transformed value, which flipped its sign for maximization and shifted it by the objective offset
 
 Examples and applications
 -------------------------

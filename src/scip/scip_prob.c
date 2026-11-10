@@ -4257,7 +4257,7 @@ SCIP_RETCODE SCIPupdateLocalDualbound(
       /* since no root node, for which we could update the dual bound, has been create yet, update the dual bound stored in
        * the problem data
        */
-      SCIPprobUpdateDualbound(scip->transprob, SCIPprobExternObjval(scip->transprob, scip->origprob, scip->set, newbound));
+      SCIPprobUpdateDualbound(scip->transprob, newbound);
       break;
 
    case SCIP_STAGE_SOLVING:
