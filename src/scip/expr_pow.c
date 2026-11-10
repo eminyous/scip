@@ -2404,6 +2404,10 @@ SCIP_DECL_EXPRMONOTONICITY(monotonicityPow)
    exponent = SCIPgetExponentExprPow(expr);
    expisint = EPSISINT(exponent, 0.0); /*lint !e835*/
 
+   /* the expression is not defined at 0 if the exponent is negative */
+   if( exponent < 0.0 && inf <= 0.0 && sup >= 0.0 )
+      return SCIP_OKAY;
+
    if( expisint )
    {
       SCIP_Bool expisodd = ceil(exponent/2) != exponent/2;
@@ -2428,7 +2432,7 @@ SCIP_DECL_EXPRMONOTONICITY(monotonicityPow)
             *result = exponent >= 0.0 ? SCIP_MONOTONE_DEC : SCIP_MONOTONE_INC;
       }
    }
-   else
+   else if( inf >= 0.0 )
    {
       /* note that the expression is not defined for negative input values
        *
