@@ -5752,7 +5752,8 @@ SCIP_RETCODE presolveSingleLockedVars(
          /* consider products coef * prod_j f_j(x)
           * - if f_j(x) is a single variable, ignore it
           * - if f_j(x) = x^(2k), then keep it if product is concave when fixing all other factor;
-          *   since x^(2k) >= 0, it suffices to check that the activity of the whole product is non-negative if haslhs or non-positive if hasrhs
+          *   since x^(2k) >= 0, it suffices to check that the activity of coef * prod_j f_j(x) is non-negative
+          *   if haslhs or non-positive if hasrhs
           * - remove all other variable expressions from exprcand
           */
          if( SCIPisExprProduct(scip, child) )
@@ -5765,6 +5766,7 @@ SCIP_RETCODE presolveSingleLockedVars(
              * call to SCIPregisterExprUsageNonlinear() in detectNlhdlrs() in canonicalize
              */
             productactivity = SCIPexprGetActivity(child);
+            SCIPintervalMulScalar(SCIP_INTERVAL_INFINITY, &productactivity, productactivity, coef);
 
             /* check whether variables in even-powered factor terms can be restricted to bounds (as in SCIPisExprPower() below) */
             keepevenpower = (haslhs && productactivity.inf >= 0.0) || (hasrhs && productactivity.sup <= 0.0);

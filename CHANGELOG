@@ -35,6 +35,8 @@ Fixed bugs
 - made sure that nauty is terminated if the maximum number of generators is reached
 - skip mapping data of untransformed and-constraints in pseudoboolean constraint initialization to avoid segmentation fault for example in IIS generation
 - reset valid depth for local constraint in SCIPconsSetLocal() to avoid invalid globality e.g. within disjunction constraint
+- fixed that the sign of the coefficient of a product term was ignored when checking whether variables of a nonlinear
+  constraint can be restricted to their bounds (constraints/nonlinear/checkvarlocks), which could cut off optimal solutions
 
 Examples and applications
 -------------------------
