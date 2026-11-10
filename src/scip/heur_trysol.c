@@ -277,9 +277,9 @@ SCIP_RETCODE SCIPheurPassSolTrySol(
    /* only store solution if we are not within our own SCIPtrySol() call */
    if( ! heurdata->rec )
    {
-      if( heurdata->trysol == NULL || (SCIPgetObjsense(scip) == SCIP_OBJSENSE_MAXIMIZE &&
-            SCIPisGT(scip, SCIPgetSolOrigObj(scip, sol), SCIPgetSolOrigObj(scip, heurdata->trysol))) ||
-         SCIPisLT(scip, SCIPgetSolOrigObj(scip, sol), SCIPgetSolOrigObj(scip, heurdata->trysol)) )
+      if( heurdata->trysol == NULL || (SCIPgetObjsense(scip) == SCIP_OBJSENSE_MAXIMIZE ?
+            SCIPisGT(scip, SCIPgetSolOrigObj(scip, sol), SCIPgetSolOrigObj(scip, heurdata->trysol)) :
+            SCIPisLT(scip, SCIPgetSolOrigObj(scip, sol), SCIPgetSolOrigObj(scip, heurdata->trysol))) )
       {
          if( heurdata->trysol != NULL )
          {
@@ -319,9 +319,9 @@ SCIP_RETCODE SCIPheurPassSolAddSol(
    /* only store solution if we are not within our own SCIPtrySol() call */
    if( ! heurdata->rec )
    {
-      if( heurdata->addsol == NULL || (SCIPgetObjsense(scip) == SCIP_OBJSENSE_MAXIMIZE &&
-            SCIPisGT(scip, SCIPgetSolOrigObj(scip, sol), SCIPgetSolOrigObj(scip, heurdata->addsol))) ||
-         SCIPisLT(scip, SCIPgetSolOrigObj(scip, sol), SCIPgetSolOrigObj(scip, heurdata->addsol)) )
+      if( heurdata->addsol == NULL || (SCIPgetObjsense(scip) == SCIP_OBJSENSE_MAXIMIZE ?
+            SCIPisGT(scip, SCIPgetSolOrigObj(scip, sol), SCIPgetSolOrigObj(scip, heurdata->addsol)) :
+            SCIPisLT(scip, SCIPgetSolOrigObj(scip, sol), SCIPgetSolOrigObj(scip, heurdata->addsol))) )
       {
          if( heurdata->addsol != NULL )
          {
