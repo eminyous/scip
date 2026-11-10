@@ -880,3 +880,41 @@ Test(intervalarith, sincos)
    EXPECTEQ(res.inf, -1.0);
    EXPECTEQ(res.sup, 1.0);
 }
+
+/* integral exponents whose absolute value exceeds INT_MAX */
+Test(intervalarith, bigexponent)
+{
+   SCIP_INTERVAL arg;
+   SCIP_INTERVAL res;
+
+   SCIPintervalSetBounds(&arg, -1.0, 1.0);
+   SCIPintervalPowerScalar(SCIP_INTERVAL_INFINITY, &res, arg, 2147483649.0);
+   EXPECTEQ(res.inf, -1.0);
+   EXPECTEQ(res.sup, 1.0);
+
+   SCIPintervalSet(&arg, -1.0);
+   SCIPintervalPowerScalar(SCIP_INTERVAL_INFINITY, &res, arg, 2147483649.0);
+   EXPECTEQ(res.inf, -1.0);
+   EXPECTEQ(res.sup, -1.0);
+
+   SCIPintervalPowerScalar(SCIP_INTERVAL_INFINITY, &res, arg, 2147483650.0);
+   EXPECTEQ(res.inf, 1.0);
+   EXPECTEQ(res.sup, 1.0);
+
+   SCIPintervalPowerScalar(SCIP_INTERVAL_INFINITY, &res, arg, -2147483649.0);
+   EXPECTEQ(res.inf, -1.0);
+   EXPECTEQ(res.sup, -1.0);
+
+   SCIPintervalPowerScalar(SCIP_INTERVAL_INFINITY, &res, arg, -2147483648.0);
+   EXPECTEQ(res.inf, 1.0);
+   EXPECTEQ(res.sup, 1.0);
+
+   SCIPintervalSetBounds(&arg, -2.0, -0.5);
+   SCIPintervalPowerScalar(SCIP_INTERVAL_INFINITY, &res, arg, 2147483649.0);
+   cr_expect(res.inf <= -SCIP_INTERVAL_INFINITY);
+   EXPECTFEQ(res.sup, 0.0);
+
+   SCIPintervalPowerScalar(SCIP_INTERVAL_INFINITY, &res, arg, 2147483650.0);
+   EXPECTFEQ(res.inf, 0.0);
+   cr_expect(res.sup >= SCIP_INTERVAL_INFINITY);
+}
