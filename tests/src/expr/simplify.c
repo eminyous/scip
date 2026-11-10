@@ -404,6 +404,48 @@ Test(simplify, debug)
 }
 
 
+/* odd exponents above INT_MAX must not be treated as even; evaluated at a negative point */
+Test(simplify, large_odd_exponents)
+{
+   const char* inputs[] =
+   {
+      "abs(<y>)^2147483649",
+      "signpower(<y>,2)*<y>^2147483649",
+      "signpower(<y>,2)*signpower(<y>,2147483647)",
+      "signpower(<y>^2,2147483649)"
+   };
+   SCIP_SOL* sol;
+   int i;
+
+   SCIP_CALL( SCIPcreateSol(scip, &sol, NULL) );
+   SCIP_CALL( SCIPsetSolVal(scip, sol, y, -1.0) );
+
+   for( i = 0; i < (int)(sizeof(inputs) / sizeof(inputs[0])); ++i )
+   {
+      SCIP_EXPR* expr;
+      SCIP_EXPR* simplified;
+      SCIP_Bool changed;
+      SCIP_Bool infeasible;
+      SCIP_Real value;
+
+      SCIP_CALL( SCIPparseExpr(scip, &expr, inputs[i], NULL, NULL, NULL) );
+      SCIP_CALL( SCIPevalExpr(scip, expr, sol, 0) );
+      value = SCIPexprGetEvalValue(expr);
+
+      SCIP_CALL( SCIPsimplifyExpr(scip, expr, &simplified, &changed, &infeasible, NULL, NULL) );
+      cr_assert_not(infeasible);
+
+      SCIP_CALL( SCIPevalExpr(scip, simplified, sol, 0) );
+      cr_expect_float_eq(value, SCIPexprGetEvalValue(simplified), SCIPfeastol(scip), "%s: expecting %f got %f",
+         inputs[i], value, SCIPexprGetEvalValue(simplified));
+
+      SCIP_CALL( SCIPreleaseExpr(scip, &simplified) );
+      SCIP_CALL( SCIPreleaseExpr(scip, &expr) );
+   }
+
+   SCIP_CALL( SCIPfreeSol(scip, &sol) );
+}
+
 /* non-parametrized test, which calls presolve: tests aggregation */
 Test(simplify, remove_fix_variables)
 {
