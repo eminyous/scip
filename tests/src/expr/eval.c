@@ -367,6 +367,47 @@ Test(evalexpr, signpower, .description = "Tests expression evaluation for signpo
    SCIP_CALL( SCIPreleaseExpr(scip, &xexpr) );
 }
 
+Test(evalexpr, freetransform, .description = "Tests expression evaluation after freeing the transformed problem.")
+{
+   SCIP_EXPR* expr;
+   SCIP_EXPR* xexpr;
+   SCIP_Longint soltag;
+   int nvars;
+
+   /* create expression sqrt(x) */
+   SCIP_CALL( SCIPcreateExprVar(scip, &xexpr, x, NULL, NULL) );
+   SCIP_CALL( SCIPcreateExprPow(scip, &expr, xexpr, 0.5, NULL, NULL) );
+
+   /* evaluate and differentiate expression at 0.25, then count its variables */
+   SCIP_CALL( SCIPsetSolVal(scip, sol, x, 0.25) );
+   soltag = SCIPgetExprNewSoltag(scip);
+   SCIP_CALL( SCIPevalExpr(scip, expr, sol, soltag) );
+   SCIP_CALL( SCIPevalExprGradient(scip, expr, sol, soltag) );
+   SCIP_CALL( SCIPgetExprNVars(scip, expr, &nvars) );
+   cr_expect(SCIPisEQ(scip, SCIPexprGetEvalValue(expr), 0.5));
+   cr_expect(SCIPisEQ(scip, SCIPexprGetDerivative(xexpr), 1.0));
+   cr_expect_eq(nvars, 1);
+
+   /* the expression keeps its tags when the transformed problem is freed */
+   SCIP_CALL( SCIPtransformProb(scip) );
+   SCIP_CALL( SCIPfreeTransform(scip) );
+
+   /* count variables before an evaluation overwrites the visited tags, then evaluate and differentiate at 1.0 */
+   SCIP_CALL( SCIPgetExprNVars(scip, expr, &nvars) );
+   cr_expect_eq(nvars, 1, "nvars = %d, expected 1", nvars);
+   SCIP_CALL( SCIPsetSolVal(scip, sol, x, 1.0) );
+   soltag = SCIPgetExprNewSoltag(scip);
+   SCIP_CALL( SCIPevalExpr(scip, expr, sol, soltag) );
+   SCIP_CALL( SCIPevalExprGradient(scip, expr, sol, soltag) );
+   cr_expect(SCIPisEQ(scip, SCIPexprGetEvalValue(expr), 1.0), "value = %g, expected 1", SCIPexprGetEvalValue(expr));
+   cr_expect(SCIPisEQ(scip, SCIPexprGetDerivative(xexpr), 0.5), "derivative = %g, expected 0.5",
+      SCIPexprGetDerivative(xexpr));
+
+   /* free expressions */
+   SCIP_CALL( SCIPreleaseExpr(scip, &expr) );
+   SCIP_CALL( SCIPreleaseExpr(scip, &xexpr) );
+}
+
 /* creates expression for f(x,y) = 0.5 * ( (x^2*y^(-1)*5^(-4))^2 * (2*x + 1)^(-1) ) */
 static
 SCIP_RETCODE createExpr(
