@@ -408,6 +408,39 @@ Test(evalexpr, freetransform, .description = "Tests expression evaluation after 
    SCIP_CALL( SCIPreleaseExpr(scip, &xexpr) );
 }
 
+Test(evalexpr, freetransformactivity, .description = "Tests expression activity after freeing the transformed problem.")
+{
+   SCIP_EXPR* expr;
+   SCIP_EXPR* xexpr;
+   SCIP_INTERVAL interval;
+
+   /* create expression sqrt(x) */
+   SCIP_CALL( SCIPcreateExprVar(scip, &xexpr, x, NULL, NULL) );
+   SCIP_CALL( SCIPcreateExprPow(scip, &expr, xexpr, 0.5, NULL, NULL) );
+
+   /* evaluate expression at interval [0.0, 0.25] */
+   SCIP_CALL( SCIPchgVarUb(scip, x, 0.25) );
+   SCIP_CALL( SCIPevalExprActivity(scip, expr) );
+   interval = SCIPexprGetActivity(expr);
+   cr_expect(SCIPisEQ(scip, interval.inf, 0.0));
+   cr_expect(SCIPisEQ(scip, interval.sup, 0.5));
+
+   /* the expression keeps its activity tag when the transformed problem is freed */
+   SCIP_CALL( SCIPtransformProb(scip) );
+   SCIP_CALL( SCIPfreeTransform(scip) );
+
+   /* evaluate expression at interval [0.0, 1.0] */
+   SCIP_CALL( SCIPchgVarUb(scip, x, 1.0) );
+   SCIP_CALL( SCIPevalExprActivity(scip, expr) );
+   interval = SCIPexprGetActivity(expr);
+   cr_expect(SCIPisEQ(scip, interval.inf, 0.0), "interval.inf = %g, expected 0", interval.inf);
+   cr_expect(SCIPisEQ(scip, interval.sup, 1.0), "interval.sup = %g, expected 1", interval.sup);
+
+   /* free expressions */
+   SCIP_CALL( SCIPreleaseExpr(scip, &expr) );
+   SCIP_CALL( SCIPreleaseExpr(scip, &xexpr) );
+}
+
 /* creates expression for f(x,y) = 0.5 * ( (x^2*y^(-1)*5^(-4))^2 * (2*x + 1)^(-1) ) */
 static
 SCIP_RETCODE createExpr(
