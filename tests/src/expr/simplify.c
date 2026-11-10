@@ -65,6 +65,8 @@ ParameterizedTestParameters(simplify /* test suite */, simplify_test /* test nam
       {"(<x>^3)^0.5", "pow"},  /* should be |x|^1.5 */
       {"(<x>^4)^0.5", "pow"},
       {"(<x>^2)^1.5", "pow"},  /* should be |x|^3 */
+      {"(<y>^2)^(-0.5)", "pow"},  /* |y|^(-1), checked at y < 0 */
+      {"(<y>^4)^(-0.75)", "pow"}, /* |y|^(-3), checked at y < 0 */
       {"(<y>^2)^2", "pow"},
       {"(<x>*<y>)^3", "prod"},  /* should be x^3 y^3 by POW5 */
       {"(<x>*<y>)^0.5", "pow"}, /* should remain (x*y)^0.5 because POW5a is off by default */
