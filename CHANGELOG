@@ -35,6 +35,8 @@ Fixed bugs
 - made sure that nauty is terminated if the maximum number of generators is reached
 - skip mapping data of untransformed and-constraints in pseudoboolean constraint initialization to avoid segmentation fault for example in IIS generation
 - reset valid depth for local constraint in SCIPconsSetLocal() to avoid invalid globality e.g. within disjunction constraint
+- fixed that simplifying (x^2)^(-0.5) gave x^(-1) instead of |x|^(-1), that is, the absolute value was dropped when
+  the exponent of a nested power became a negative odd integer
 
 Examples and applications
 -------------------------

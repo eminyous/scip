@@ -1718,7 +1718,7 @@ SCIP_DECL_EXPRSIMPLIFY(simplifyPow)
          SCIP_EXPR* aux;
 
          if( EPSISINT(baseexponent, 0.0) && ((int)baseexponent) % 2 == 0 &&
-             (!EPSISINT(newexponent, 0.0) || ((int)newexponent) % 2 == 1) )
+             (!EPSISINT(newexponent, 0.0) || fmod(newexponent, 2.0) != 0.0) )
          {
             /* If base exponent was even integer and new exponent will be fractional,
              * then simplify to |expr|^newexponent to allow eval for expr < 0.
