@@ -244,6 +244,36 @@ Test(presolve, singlelockedvars3a)
    checkImplTypes(SCIP_IMPLINTTYPE_NONE, SCIP_IMPLINTTYPE_NONE, SCIP_IMPLINTTYPE_NONE);
 }
 
+/* test for presolSingleLockedVars() */
+Test(presolve, singlelockedvars4)
+{
+   /* -x^2*z^2 is concave in x and z, so x and z cannot be restricted to their bounds in a >= constraint */
+   SCIP_CALL( addCons("<x>*<z> - <x>^2*<z>^2 + <y>", 0.75, SCIPinfinity(scip)) );
+
+   /* apply presolving */
+   SCIP_CALL( TESTscipSetStage(scip, SCIP_STAGE_PRESOLVED, FALSE) );
+   cr_expect(SCIPgetNConss(scip) == 1);
+
+   /* check variable types */
+   checkTypes(SCIP_VARTYPE_CONTINUOUS, SCIP_VARTYPE_CONTINUOUS, SCIP_VARTYPE_CONTINUOUS);
+   checkImplTypes(SCIP_IMPLINTTYPE_NONE, SCIP_IMPLINTTYPE_NONE, SCIP_IMPLINTTYPE_NONE);
+}
+
+/* test for presolSingleLockedVars() */
+Test(presolve, singlelockedvars5)
+{
+   /* -x^2*z^2 is concave in x and z, so x and z can be restricted to their bounds in a <= constraint */
+   SCIP_CALL( addCons("-<x>^2*<z>^2 + <y>", -SCIPinfinity(scip), 0.5) );
+
+   /* apply presolving */
+   SCIP_CALL( TESTscipSetStage(scip, SCIP_STAGE_PRESOLVED, FALSE) );
+   cr_expect(SCIPgetNConss(scip) == 1);
+
+   /* check variable types */
+   checkTypes(SCIP_VARTYPE_BINARY, SCIP_VARTYPE_CONTINUOUS, SCIP_VARTYPE_BINARY);
+   checkImplTypes(SCIP_IMPLINTTYPE_NONE, SCIP_IMPLINTTYPE_NONE, SCIP_IMPLINTTYPE_NONE);
+}
+
 /* test for presolveImplint()
  *
  * consider x + 2 y^2 - 3 y^3 - 4 z == 5 with x continuous, y integer, and z binary
