@@ -37,6 +37,8 @@ Fixed bugs
 - reset valid depth for local constraint in SCIPconsSetLocal() to avoid invalid globality e.g. within disjunction constraint
 - fixed that expression solution, differentiation, and iterator tags were handed out again after the transformed problem
   was freed, so that expressions of the original problem could return outdated values
+- fixed that the bound change counter was reset when the transformed problem was freed, so that expressions of the
+  original problem could return outdated activities
 
 Examples and applications
 -------------------------

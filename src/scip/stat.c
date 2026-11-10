@@ -124,6 +124,7 @@ SCIP_RETCODE SCIPstatCreate(
    (*stat)->exprlastvisitedtag = 0;
    (*stat)->exprlastsoltag = 0;
    (*stat)->exprlastdifftag = 0;
+   (*stat)->domchgcount = 0;
 
    SCIPstatReset(*stat, set, transprob, origprob);
 
@@ -290,7 +291,6 @@ void SCIPstatReset(
    stat->npsbestsolsfound = 0;
    stat->nsbbestsolsfound = 0;
    stat->nexternalsolsfound = 0;
-   stat->domchgcount = 0;
    stat->nboundchgs = 0;
    stat->nholechgs = 0;
    stat->nprobboundchgs = 0;
