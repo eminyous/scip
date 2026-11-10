@@ -120,6 +120,11 @@ SCIP_RETCODE SCIPstatCreate(
    (*stat)->detertimecnt = 0.0;
    (*stat)->nreoptruns = 0;
 
+   /* expressions keep their tags across SCIPstatReset(), so these counters must not be reset there */
+   (*stat)->exprlastvisitedtag = 0;
+   (*stat)->exprlastsoltag = 0;
+   (*stat)->exprlastdifftag = 0;
+
    SCIPstatReset(*stat, set, transprob, origprob);
 
    return SCIP_OKAY;
@@ -359,9 +364,6 @@ void SCIPstatReset(
    stat->ninitconssadded = 0;
    stat->nactiveconssadded = 0;
    stat->externmemestim = 0;
-   stat->exprlastvisitedtag = 0;
-   stat->exprlastsoltag = 0;
-   stat->exprlastdifftag = 0;
    stat->nrunsbeforefirst = -1;
    stat->firstprimalheur = NULL;
    stat->firstprimaltime = SCIP_DEFAULT_INFINITY;
